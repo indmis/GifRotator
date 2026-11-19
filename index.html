@@ -2,94 +2,45 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>GIF Редактор</title>
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: #1a1a1a;
-    color: #eee;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 16px;
-    gap: 16px;
+    margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #1a1a1a; color: #eee; min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; padding: 16px; gap: 16px;
   }
   h1 { font-size: 20px; margin: 0; font-weight: 600; }
   .upload {
-    width: 100%;
-    max-width: 500px;
-    border: 2px dashed #444;
-    border-radius: 12px;
-    padding: 32px 16px;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color .2s;
+    width: 100%; max-width: 500px; border: 2px dashed #444; border-radius: 12px;
+    padding: 32px 16px; text-align: center; cursor: pointer; transition: border-color .2s;
   }
   .upload:active { border-color: #4a9eff; }
   .upload input { display: none; }
   .upload span { color: #4a9eff; font-weight: 600; }
   .upload p { margin: 8px 0 0; color: #888; font-size: 13px; }
 
-  .stage {
-    display: none;
-    flex-direction: column;
-    gap: 16px;
-    width: 100%;
-    max-width: 500px;
-    align-items: center;
-  }
+  .stage { display: none; flex-direction: column; gap: 16px; width: 100%; max-width: 500px; align-items: center; }
   .stage.active { display: flex; }
 
   .preview-wrap {
-    position: relative;
-    width: 100%;
-    background: #000;
-    border-radius: 12px;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 200px;
-    touch-action: none;
+    position: relative; width: 100%; background: #000; border-radius: 12px;
+    overflow: hidden; display: flex; justify-content: center; align-items: center;
+    min-height: 200px; touch-action: none;
   }
-  #preview {
-    display: block;
-    max-width: 100%;
-    user-select: none;
-    -webkit-user-drag: none;
-  }
+  #preview { display: block; max-width: 100%; user-select: none; -webkit-user-drag: none; }
 
-  .controls {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
-  }
-  .row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
+  .controls { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .row label { font-size: 13px; color: #aaa; min-width: 90px; }
   .row input[type=range] { flex: 1; accent-color: #4a9eff; }
   .row .val { font-size: 13px; color: #4a9eff; min-width: 44px; text-align: right; font-variant-numeric: tabular-nums; }
 
   button {
-    background: #2a2a2a;
-    color: #eee;
-    border: 1px solid #444;
-    border-radius: 10px;
-    padding: 12px 16px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background .15s, transform .05s;
-    flex: 1;
+    background: #2a2a2a; color: #eee; border: 1px solid #444; border-radius: 10px;
+    padding: 12px 16px; font-size: 15px; font-weight: 600; cursor: pointer;
+    transition: background .15s, transform .05s; flex: 1;
   }
   button:active { transform: scale(0.97); background: #333; }
   button.primary { background: #4a9eff; border-color: #4a9eff; color: #fff; }
@@ -98,35 +49,15 @@
   .hint { font-size: 12px; color: #666; text-align: center; }
 
   #loader {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.7);
-    z-index: 100;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    gap: 12px;
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 100;
+    justify-content: center; align-items: center; flex-direction: column; gap: 12px;
   }
   #loader.active { display: flex; }
-  .spinner {
-    width: 42px; height: 42px;
-    border: 4px solid #444;
-    border-top-color: #4a9eff;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
+  .spinner { width: 42px; height: 42px; border: 4px solid #444; border-top-color: #4a9eff; border-radius: 50%; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   #loader span { font-size: 14px; color: #ccc; }
 
-  #result {
-    display: none;
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
-    max-width: 500px;
-    align-items: center;
-  }
+  #result { display: none; flex-direction: column; gap: 12px; width: 100%; max-width: 500px; align-items: center; }
   #result.active { display: flex; }
   #result img { max-width: 100%; border-radius: 12px; background: #000; }
 </style>
@@ -145,43 +76,19 @@
   <div class="preview-wrap">
     <canvas id="preview"></canvas>
   </div>
-
   <div class="controls">
-    <div class="row">
-      <label>Поворот</label>
-      <input type="range" id="rot" min="-180" max="180" value="0" step="1">
-      <span class="val" id="rotVal">0°</span>
-    </div>
-    <div class="row">
-      <label>Масштаб</label>
-      <input type="range" id="zoom" min="0.3" max="2" value="1" step="0.01">
-      <span class="val" id="zoomVal">1×</span>
-    </div>
-    <div class="row">
-      <label>Сдвиг X</label>
-      <input type="range" id="tx" min="-100" max="100" value="0" step="1">
-      <span class="val" id="txVal">0</span>
-    </div>
-    <div class="row">
-      <label>Сдвиг Y</label>
-      <input type="range" id="ty" min="-100" max="100" value="0" step="1">
-      <span class="val" id="tyVal">0</span>
-    </div>
-    <div class="row">
-      <label>Размер</label>
-      <input type="range" id="size" min="200" max="800" value="400" step="10">
-      <span class="val" id="sizeVal">400</span>
-    </div>
-
+    <div class="row"><label>Поворот</label><input type="range" id="rot" min="-180" max="180" value="0" step="1"><span class="val" id="rotVal">0°</span></div>
+    <div class="row"><label>Масштаб</label><input type="range" id="zoom" min="0.3" max="2" value="1" step="0.01"><span class="val" id="zoomVal">1×</span></div>
+    <div class="row"><label>Сдвиг X</label><input type="range" id="tx" min="-100" max="100" value="0" step="1"><span class="val" id="txVal">0</span></div>
+    <div class="row"><label>Сдвиг Y</label><input type="range" id="ty" min="-100" max="100" value="0" step="1"><span class="val" id="tyVal">0</span></div>
+    <div class="row"><label>Размер</label><input type="range" id="size" min="200" max="800" value="400" step="10"><span class="val" id="sizeVal">400</span></div>
     <div class="row">
       <button id="btnRotL">⟲ -90°</button>
       <button id="btnRotR">⟳ +90°</button>
       <button id="btnReset">↺ Сброс</button>
     </div>
-    <div class="row">
-      <button id="btnSave" class="primary">💾 Сохранить GIF</button>
-    </div>
-    <div class="hint">Потяни превью, чтобы сдвинуть. Используй ползунки для точной настройки.</div>
+    <div class="row"><button id="btnSave" class="primary">💾 Сохранить GIF</button></div>
+    <div class="hint">Потяни превью, чтобы сдвинуть. Ползунки — для точной настройки.</div>
   </div>
 </div>
 
@@ -192,117 +99,118 @@
 
 <div id="loader"><div class="spinner"></div><span>Обрабатываю GIF…</span></div>
 
-<script src="https://cdn.jsdelivr.net/npm/gifuct-js@2.1.2/dist/gifuct-js.min.js"></script>
+<!-- 1. Подключаем gifuct-js как ES-модуль и делаем глобальным -->
+<script type="module">
+  import { parseGIF, decompressFrames } from 'https://code4fukui.github.io/gifuct-js/src/index.js';
+  window.gifuct = { parseGIF, decompressFrames };
+  window.dispatchEvent(new Event('gifuct-ready'));
+</script>
+
+<!-- 2. Основной скрипт -->
 <script>
 (function() {
   const fileInput = document.getElementById('fileInput');
   const uploadBox = document.getElementById('uploadBox');
   const stage = document.getElementById('stage');
   const canvas = document.getElementById('preview');
-  const ctx = canvas.getContext('2d');
   const loader = document.getElementById('loader');
 
-  const els = {
-    rot: document.getElementById('rot'),
-    zoom: document.getElementById('zoom'),
-    tx: document.getElementById('tx'),
-    ty: document.getElementById('ty'),
-    size: document.getElementById('size'),
-  };
-  const vals = {
-    rot: document.getElementById('rotVal'),
-    zoom: document.getElementById('zoomVal'),
-    tx: document.getElementById('txVal'),
-    ty: document.getElementById('tyVal'),
-    size: document.getElementById('sizeVal'),
-  };
+  const els = { rot: document.getElementById('rot'), zoom: document.getElementById('zoom'), tx: document.getElementById('tx'), ty: document.getElementById('ty'), size: document.getElementById('size') };
+  const vals = { rot: document.getElementById('rotVal'), zoom: document.getElementById('zoomVal'), tx: document.getElementById('txVal'), ty: document.getElementById('tyVal'), size: document.getElementById('sizeVal') };
 
-  let gifData = null;       // { frames: [{imageData, delay}], width, height }
+  let gifData = null;
   let transform = { rot: 0, zoom: 1, tx: 0, ty: 0 };
   let canvasSize = 400;
   let currentFrame = 0;
   let animTimer = null;
   let dragging = false;
   let lastTouch = null;
+  let gifJsReady = false;
+  let gifWorkerBlobUrl = null;
 
-  // ---------- Загрузка GIF ----------
+  // ----- Ждём загрузки gifuct -----
+  function waitForGifuct() {
+    return new Promise((resolve) => {
+      if (window.gifuct) return resolve();
+      window.addEventListener('gifuct-ready', () => resolve(), { once: true });
+      setTimeout(() => { if (window.gifuct) resolve(); }, 5000);
+    });
+  }
+
+  // ----- Загрузка gif.js и воркера -----
+  async function initGifJs() {
+    if (gifJsReady) return;
+    // Загружаем сам gif.js
+    await new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.min.js';
+      s.onload = res;
+      s.onerror = () => rej(new Error('gif.js load failed'));
+      document.head.appendChild(s);
+    });
+    // Загружаем воркер как Blob (обход CORS на GitHub Pages) [citation:13]
+    const resp = await fetch('https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js');
+    if (!resp.ok) throw new Error('worker fetch failed');
+    const blob = await resp.blob();
+    gifWorkerBlobUrl = URL.createObjectURL(blob);
+    gifJsReady = true;
+  }
+
+  // ----- Загрузка файла -----
   fileInput.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     loader.classList.add('active');
     try {
+      await waitForGifuct();
+      if (!window.gifuct) throw new Error('gifuct не загрузился');
       const buf = await file.arrayBuffer();
       gifData = parseGif(buf);
       canvasSize = Math.min(500, Math.max(gifData.width, gifData.height) + 100);
       els.size.value = canvasSize;
       vals.size.textContent = canvasSize;
-
       uploadBox.style.display = 'none';
       stage.classList.add('active');
       document.getElementById('result').classList.remove('active');
-
       resetTransform();
       startPreview();
     } catch (err) {
-      alert('Не удалось прочитать GIF: ' + err.message);
+      alert('Ошибка: ' + err.message);
       console.error(err);
     } finally {
       loader.classList.remove('active');
     }
   });
 
-  // ---------- Парсинг GIF через gifuct-js ----------
+  // ----- Парсинг -----
   function parseGif(buffer) {
-    const gif = window.GIF ? gifuct.parseGIF(buffer) : null;
-    if (!gif) throw new Error('библиотека gifuct-js не загрузилась');
-    const frames = gifuct.decompressFrames(gif, true);
-    const dims = gif.lsd;
-
-    // Склеиваем кадры на общий "холст" с учётом disposal
-    const W = dims.width, H = dims.height;
+    const gif = window.gifuct.parseGIF(buffer);
+    const frames = window.gifuct.decompressFrames(gif, true);
+    const W = gif.lsd.width, H = gif.lsd.height;
     const offCanvas = document.createElement('canvas');
     offCanvas.width = W; offCanvas.height = H;
     const offCtx = offCanvas.getContext('2d');
-
     const out = [];
     let prevSnapshot = null;
 
     for (let i = 0; i < frames.length; i++) {
       const f = frames[i];
       const { width, height, top, left } = f.dims;
-
-      // disposal: сохранить предыдущее состояние ДО отрисовки (для restoration)
-      if (f.disposalType === 3) {
-        prevSnapshot = offCtx.getImageData(0, 0, W, H);
-      }
-
-      // нарисовать кадр
+      if (f.disposalType === 3) prevSnapshot = offCtx.getImageData(0, 0, W, H);
       const tmp = document.createElement('canvas');
       tmp.width = width; tmp.height = height;
       const tmpCtx = tmp.getContext('2d');
       const imgData = new ImageData(new Uint8ClampedArray(f.patch), width, height);
       tmpCtx.putImageData(imgData, 0, 0);
       offCtx.drawImage(tmp, left, top);
-
-      // сохранить итоговый кадр
-      out.push({
-        imageData: offCtx.getImageData(0, 0, W, H),
-        delay: (f.delay || 10) * 10 // gifuct даёт в сотых секунды -> мс
-      });
-
-      // disposal
-      if (f.disposalType === 2) {
-        // restore to background
-        offCtx.clearRect(left, top, width, height);
-      } else if (f.disposalType === 3 && prevSnapshot) {
-        offCtx.putImageData(prevSnapshot, 0, 0);
-      }
+      out.push({ imageData: offCtx.getImageData(0, 0, W, H), delay: (f.delay || 10) });
+      if (f.disposalType === 2) offCtx.clearRect(left, top, width, height);
+      else if (f.disposalType === 3 && prevSnapshot) offCtx.putImageData(prevSnapshot, 0, 0);
     }
-
     return { frames: out, width: W, height: H };
   }
 
-  // ---------- Трансформация ----------
+  // ----- Трансформация -----
   function resetTransform() {
     transform = { rot: 0, zoom: 1, tx: 0, ty: 0 };
     els.rot.value = 0; els.zoom.value = 1; els.tx.value = 0; els.ty.value = 0;
@@ -310,38 +218,23 @@
     vals.tx.textContent = '0'; vals.ty.textContent = '0';
   }
 
-  function applyTransform(c, size) {
-    c.width = size; c.height = size;
-    const x = c.getContext('2d');
-    x.clearRect(0, 0, size, size);
-    x.fillStyle = '#000';
-    x.fillRect(0, 0, size, size);
-  }
-
   function drawFrame(canvasEl, frame, t, size) {
     const c = canvasEl.getContext('2d');
     c.save();
     c.fillStyle = '#000';
     c.fillRect(0, 0, size, size);
-
-    // временный canvas с исходным кадром
     const src = document.createElement('canvas');
-    src.width = gifData.width;
-    src.height = gifData.height;
+    src.width = gifData.width; src.height = gifData.height;
     src.getContext('2d').putImageData(frame.imageData, 0, 0);
-
     c.translate(size / 2 + t.tx, size / 2 + t.ty);
     c.rotate(t.rot * Math.PI / 180);
     c.scale(t.zoom, t.zoom);
-
-    // вписать в квадрат size×size
     const fit = Math.min(size / gifData.width, size / gifData.height);
-    c.drawImage(src, -gifData.width * fit / 2, -gifData.height * fit / 2,
-                gifData.width * fit, gifData.height * fit);
+    c.drawImage(src, -gifData.width * fit / 2, -gifData.height * fit / 2, gifData.width * fit, gifData.height * fit);
     c.restore();
   }
 
-  // ---------- Превью-анимация ----------
+  // ----- Превью -----
   function startPreview() {
     stopPreview();
     currentFrame = 0;
@@ -356,12 +249,9 @@
     };
     tick();
   }
-  function stopPreview() {
-    if (animTimer) clearTimeout(animTimer);
-    animTimer = null;
-  }
+  function stopPreview() { if (animTimer) clearTimeout(animTimer); animTimer = null; }
 
-  // ---------- Слайдеры ----------
+  // ----- Слайдеры -----
   function updateVals() {
     vals.rot.textContent = transform.rot + '°';
     vals.zoom.textContent = transform.zoom.toFixed(2) + '×';
@@ -369,35 +259,25 @@
     vals.ty.textContent = Math.round(transform.ty);
     vals.size.textContent = canvasSize;
   }
-
   els.rot.addEventListener('input', () => { transform.rot = +els.rot.value; updateVals(); });
   els.zoom.addEventListener('input', () => { transform.zoom = +els.zoom.value; updateVals(); });
   els.tx.addEventListener('input', () => { transform.tx = +els.tx.value; updateVals(); });
   els.ty.addEventListener('input', () => { transform.ty = +els.ty.value; updateVals(); });
-  els.size.addEventListener('input', () => {
-    canvasSize = +els.size.value;
-    // нормализуем tx/ty под новый размер
-    updateVals();
-  });
+  els.size.addEventListener('input', () => { canvasSize = +els.size.value; updateVals(); });
 
   document.getElementById('btnRotL').onclick = () => {
-    transform.rot = ((transform.rot - 90 + 540) % 360) - 180;
-    // приводим к диапазону -180..180
+    transform.rot = transform.rot - 90;
     if (transform.rot < -180) transform.rot += 360;
-    els.rot.value = transform.rot;
-    updateVals();
+    els.rot.value = transform.rot; updateVals();
   };
   document.getElementById('btnRotR').onclick = () => {
-    transform.rot = ((transform.rot + 90 + 540) % 360) - 180;
-    if (transform.rot < -180) transform.rot += 360;
-    els.rot.value = transform.rot;
-    updateVals();
+    transform.rot = transform.rot + 90;
+    if (transform.rot > 180) transform.rot -= 360;
+    els.rot.value = transform.rot; updateVals();
   };
-  document.getElementById('btnReset').onclick = () => {
-    resetTransform();
-  };
+  document.getElementById('btnReset').onclick = () => resetTransform();
 
-  // ---------- Перетаскивание превью ----------
+  // ----- Перетаскивание -----
   const previewWrap = document.querySelector('.preview-wrap');
   previewWrap.addEventListener('pointerdown', (e) => {
     dragging = true;
@@ -415,30 +295,23 @@
   previewWrap.addEventListener('pointerup', () => { dragging = false; });
   previewWrap.addEventListener('pointercancel', () => { dragging = false; });
 
-  // ---------- Сохранение GIF ----------
+  // ----- Сохранение -----
   document.getElementById('btnSave').onclick = async () => {
     if (!gifData) return;
     stopPreview();
     loader.classList.add('active');
     await new Promise(r => setTimeout(r, 30));
-
     try {
+      await initGifJs();
       const blob = await renderGif();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
-      a.download = 'edited.gif';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-
-      // fallback: показать картинку
+      a.href = url; a.download = 'edited.gif';
+      document.body.appendChild(a); a.click(); a.remove();
       const resBox = document.getElementById('result');
-      const img = document.getElementById('resultImg');
-      img.src = url;
+      document.getElementById('resultImg').src = url;
       resBox.classList.add('active');
       resBox.scrollIntoView({ behavior: 'smooth' });
-
       setTimeout(() => URL.revokeObjectURL(url), 60000);
     } catch (err) {
       alert('Ошибка при сохранении: ' + err.message);
@@ -449,49 +322,22 @@
     }
   };
 
-  // Рендер GIF через canvas + gif.js
   function renderGif() {
     return new Promise((resolve, reject) => {
-      // Проверяем наличие gif.js
-      if (!window.GIF) return reject(new Error('gif.js не загрузился'));
-
       const encoder = new GIF({
-        workers: 2,
-        quality: 10,
-        width: canvasSize,
-        height: canvasSize,
-        workerScript: 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js'
+        workers: 2, quality: 10, width: canvasSize, height: canvasSize,
+        workerScript: gifWorkerBlobUrl
       });
-
-      // рендерим каждый кадр на отдельный canvas
       const frameCanvas = document.createElement('canvas');
       for (let i = 0; i < gifData.frames.length; i++) {
         drawFrame(frameCanvas, gifData.frames[i], transform, canvasSize);
         encoder.addFrame(frameCanvas, { delay: gifData.frames[i].delay || 100, copy: true });
       }
-
       encoder.on('finished', (blob) => resolve(blob));
       encoder.on('error', (e) => reject(e));
       encoder.render();
     });
   }
-
-  // ---------- Загрузка gif.js (для кодирования) ----------
-  // gifuct-js у нас как gifuct. Для кодирования нужен gif.js — подгрузим динамически
-  function loadScript(src) {
-    return new Promise((res, rej) => {
-      const s = document.createElement('script');
-      s.src = src;
-      s.onload = res;
-      s.onerror = () => rej(new Error('не загрузилось: ' + src));
-      document.head.appendChild(s);
-    });
-  }
-
-  // при старте — подгрузим gif.js
-  loadScript('https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.min.js')
-    .then(() => console.log('gif.js ready'))
-    .catch(e => console.error(e));
 
 })();
 </script>
