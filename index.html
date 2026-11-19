@@ -116,11 +116,21 @@
 
   let gifData = null;
   let rotation = 0;            // 0, 90, 180, 270 — кратность 90
-  let outWidth = 0, outHeight = 0;  // размер итогового canvas с учётом поворота
+  let outWidth = 0, outHeight = 0;
   let currentFrame = 0;
   let animTimer = null;
   let gifJsReady = false;
   let gifWorkerBlobUrl = null;
+
+  // ---- случайное имя файла ----
+  function randomName(len) {
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const arr = new Uint32Array(len);
+    crypto.getRandomValues(arr);
+    let out = '';
+    for (let i = 0; i < len; i++) out += chars[arr[i] % chars.length];
+    return out;
+  }
 
   function waitForGifuct() {
     return new Promise((resolve) => {
@@ -196,21 +206,18 @@
     return { frames: out, width: W, height: H };
   }
 
-  // пересчитать размеры выходного canvas по текущему повороту
   function updateOutputSize() {
     const swap = rotation === 90 || rotation === 270;
     outWidth = swap ? gifData.height : gifData.width;
     outHeight = swap ? gifData.width : gifData.height;
     canvas.width = outWidth;
     canvas.height = outHeight;
-    // CSS-размер ограничим, чтобы влезало в экран
     const maxW = Math.min(window.innerWidth - 40, 500);
     const scale = Math.min(maxW / outWidth, 1, (window.innerHeight * 0.6) / outHeight);
     canvas.style.width = (outWidth * scale) + 'px';
     canvas.style.height = (outHeight * scale) + 'px';
   }
 
-  // отрисовать кадр с учётом поворота на итоговый canvas
   function drawFrame(targetCanvas, frame, rot) {
     const swap = rot === 90 || rot === 270;
     const w = swap ? gifData.height : gifData.width;
@@ -219,7 +226,6 @@
     targetCanvas.height = h;
     const c = targetCanvas.getContext('2d');
 
-    // исходный кадр
     const src = document.createElement('canvas');
     src.width = gifData.width;
     src.height = gifData.height;
@@ -275,7 +281,8 @@
       const blob = await renderGif();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = 'rotated.gif';
+      a.href = url;
+      a.download = randomName(16) + '.gif';   // ← случайное имя, 16 символов
       document.body.appendChild(a); a.click(); a.remove();
       const resBox = document.getElementById('result');
       document.getElementById('resultImg').src = url;
@@ -311,7 +318,6 @@
     });
   }
 
-  // при изменении размера окна — пересчитать CSS-масштаб
   window.addEventListener('resize', () => { if (gifData) updateOutputSize(); });
 
 })();
