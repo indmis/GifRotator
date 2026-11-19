@@ -2,14 +2,15 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>GIF Редактор</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GIF Поворот</title>
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body {
     margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background: #1a1a1a; color: #eee; min-height: 100vh;
-    display: flex; flex-direction: column; align-items: center; padding: 16px; gap: 16px;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 16px; gap: 16px;
   }
   h1 { font-size: 20px; margin: 0; font-weight: 600; }
   .upload {
@@ -25,31 +26,30 @@
   .stage.active { display: flex; }
 
   .preview-wrap {
-    position: relative; width: 100%; background: #000; border-radius: 12px;
-    overflow: hidden; display: flex; justify-content: center; align-items: center;
-    min-height: 200px; touch-action: none;
+    width: 100%; background: #000; border-radius: 12px; overflow: hidden;
+    display: flex; justify-content: center; align-items: center; padding: 8px;
   }
-  #preview { display: block; max-width: 100%; user-select: none; -webkit-user-drag: none; }
+  #preview {
+    display: block; max-width: 100%; max-height: 60vh;
+    width: auto; height: auto;
+    object-fit: contain;
+    user-select: none; -webkit-user-drag: none;
+  }
 
   .controls { display: flex; flex-direction: column; gap: 12px; width: 100%; }
-  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .row label { font-size: 13px; color: #aaa; min-width: 90px; }
-  .row input[type=range] { flex: 1; accent-color: #4a9eff; }
-  .row .val { font-size: 13px; color: #4a9eff; min-width: 44px; text-align: right; font-variant-numeric: tabular-nums; }
-
+  .row { display: flex; gap: 8px; align-items: center; }
   button {
     background: #2a2a2a; color: #eee; border: 1px solid #444; border-radius: 10px;
-    padding: 12px 16px; font-size: 15px; font-weight: 600; cursor: pointer;
+    padding: 14px 16px; font-size: 16px; font-weight: 600; cursor: pointer;
     transition: background .15s, transform .05s; flex: 1;
   }
   button:active { transform: scale(0.97); background: #333; }
   button.primary { background: #4a9eff; border-color: #4a9eff; color: #fff; }
   button.primary:active { background: #3a8eef; }
-
   .hint { font-size: 12px; color: #666; text-align: center; }
 
   #loader {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 100;
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 100;
     justify-content: center; align-items: center; flex-direction: column; gap: 12px;
   }
   #loader.active { display: flex; }
@@ -60,16 +60,17 @@
   #result { display: none; flex-direction: column; gap: 12px; width: 100%; max-width: 500px; align-items: center; }
   #result.active { display: flex; }
   #result img { max-width: 100%; border-radius: 12px; background: #000; }
+  #result p { font-size: 13px; color: #aaa; text-align: center; margin: 0; }
 </style>
 </head>
 <body>
 
-<h1>GIF Редактор</h1>
+<h1>GIF Поворот</h1>
 
 <label class="upload" id="uploadBox">
   <input type="file" accept="image/gif" id="fileInput">
   <div>📁 <span>Выберите GIF</span> с устройства</div>
-  <p>поворот • кадрирование • сохранение</p>
+  <p>поворот на 90° • сохранение</p>
 </label>
 
 <div class="stage" id="stage">
@@ -77,36 +78,34 @@
     <canvas id="preview"></canvas>
   </div>
   <div class="controls">
-    <div class="row"><label>Поворот</label><input type="range" id="rot" min="-180" max="180" value="0" step="1"><span class="val" id="rotVal">0°</span></div>
-    <div class="row"><label>Масштаб</label><input type="range" id="zoom" min="0.3" max="2" value="1" step="0.01"><span class="val" id="zoomVal">1×</span></div>
-    <div class="row"><label>Сдвиг X</label><input type="range" id="tx" min="-100" max="100" value="0" step="1"><span class="val" id="txVal">0</span></div>
-    <div class="row"><label>Сдвиг Y</label><input type="range" id="ty" min="-100" max="100" value="0" step="1"><span class="val" id="tyVal">0</span></div>
-    <div class="row"><label>Размер</label><input type="range" id="size" min="200" max="800" value="400" step="10"><span class="val" id="sizeVal">400</span></div>
     <div class="row">
-      <button id="btnRotL">⟲ -90°</button>
-      <button id="btnRotR">⟳ +90°</button>
+      <button id="btnRotL">⟲ Влево 90°</button>
+      <button id="btnRotR">⟳ Вправо 90°</button>
+    </div>
+    <div class="row">
       <button id="btnReset">↺ Сброс</button>
     </div>
-    <div class="row"><button id="btnSave" class="primary">💾 Сохранить GIF</button></div>
-    <div class="hint">Потяни превью, чтобы сдвинуть. Ползунки — для точной настройки.</div>
+    <div class="row">
+      <button id="btnSave" class="primary">💾 Сохранить GIF</button>
+    </div>
+    <div class="hint">Каждый тап поворачивает на 90°. Размер canvas подстраивается под повёрнутую гифку.</div>
   </div>
 </div>
 
 <div id="result">
-  <p id="resultMsg">Готово! Если файл не скачался — нажми и удерживай картинку ниже:</p>
+  <p>Готово! Если файл не скачался — нажми и удерживай картинку ниже, чтобы сохранить:</p>
   <img id="resultImg" alt="Результат">
 </div>
 
 <div id="loader"><div class="spinner"></div><span>Обрабатываю GIF…</span></div>
 
-<!-- 1. Подключаем gifuct-js как ES-модуль и делаем глобальным -->
+<!-- gifuct-js как ES-модуль -->
 <script type="module">
   import { parseGIF, decompressFrames } from 'https://code4fukui.github.io/gifuct-js/src/index.js';
   window.gifuct = { parseGIF, decompressFrames };
   window.dispatchEvent(new Event('gifuct-ready'));
 </script>
 
-<!-- 2. Основной скрипт -->
 <script>
 (function() {
   const fileInput = document.getElementById('fileInput');
@@ -115,20 +114,14 @@
   const canvas = document.getElementById('preview');
   const loader = document.getElementById('loader');
 
-  const els = { rot: document.getElementById('rot'), zoom: document.getElementById('zoom'), tx: document.getElementById('tx'), ty: document.getElementById('ty'), size: document.getElementById('size') };
-  const vals = { rot: document.getElementById('rotVal'), zoom: document.getElementById('zoomVal'), tx: document.getElementById('txVal'), ty: document.getElementById('tyVal'), size: document.getElementById('sizeVal') };
-
   let gifData = null;
-  let transform = { rot: 0, zoom: 1, tx: 0, ty: 0 };
-  let canvasSize = 400;
+  let rotation = 0;            // 0, 90, 180, 270 — кратность 90
+  let outWidth = 0, outHeight = 0;  // размер итогового canvas с учётом поворота
   let currentFrame = 0;
   let animTimer = null;
-  let dragging = false;
-  let lastTouch = null;
   let gifJsReady = false;
   let gifWorkerBlobUrl = null;
 
-  // ----- Ждём загрузки gifuct -----
   function waitForGifuct() {
     return new Promise((resolve) => {
       if (window.gifuct) return resolve();
@@ -137,10 +130,8 @@
     });
   }
 
-  // ----- Загрузка gif.js и воркера -----
   async function initGifJs() {
     if (gifJsReady) return;
-    // Загружаем сам gif.js
     await new Promise((res, rej) => {
       const s = document.createElement('script');
       s.src = 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.min.js';
@@ -148,7 +139,6 @@
       s.onerror = () => rej(new Error('gif.js load failed'));
       document.head.appendChild(s);
     });
-    // Загружаем воркер как Blob (обход CORS на GitHub Pages) [citation:13]
     const resp = await fetch('https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js');
     if (!resp.ok) throw new Error('worker fetch failed');
     const blob = await resp.blob();
@@ -156,7 +146,6 @@
     gifJsReady = true;
   }
 
-  // ----- Загрузка файла -----
   fileInput.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -166,13 +155,11 @@
       if (!window.gifuct) throw new Error('gifuct не загрузился');
       const buf = await file.arrayBuffer();
       gifData = parseGif(buf);
-      canvasSize = Math.min(500, Math.max(gifData.width, gifData.height) + 100);
-      els.size.value = canvasSize;
-      vals.size.textContent = canvasSize;
+      rotation = 0;
+      updateOutputSize();
       uploadBox.style.display = 'none';
       stage.classList.add('active');
       document.getElementById('result').classList.remove('active');
-      resetTransform();
       startPreview();
     } catch (err) {
       alert('Ошибка: ' + err.message);
@@ -182,7 +169,6 @@
     }
   });
 
-  // ----- Парсинг -----
   function parseGif(buffer) {
     const gif = window.gifuct.parseGIF(buffer);
     const frames = window.gifuct.decompressFrames(gif, true);
@@ -210,37 +196,56 @@
     return { frames: out, width: W, height: H };
   }
 
-  // ----- Трансформация -----
-  function resetTransform() {
-    transform = { rot: 0, zoom: 1, tx: 0, ty: 0 };
-    els.rot.value = 0; els.zoom.value = 1; els.tx.value = 0; els.ty.value = 0;
-    vals.rot.textContent = '0°'; vals.zoom.textContent = '1×';
-    vals.tx.textContent = '0'; vals.ty.textContent = '0';
+  // пересчитать размеры выходного canvas по текущему повороту
+  function updateOutputSize() {
+    const swap = rotation === 90 || rotation === 270;
+    outWidth = swap ? gifData.height : gifData.width;
+    outHeight = swap ? gifData.width : gifData.height;
+    canvas.width = outWidth;
+    canvas.height = outHeight;
+    // CSS-размер ограничим, чтобы влезало в экран
+    const maxW = Math.min(window.innerWidth - 40, 500);
+    const scale = Math.min(maxW / outWidth, 1, (window.innerHeight * 0.6) / outHeight);
+    canvas.style.width = (outWidth * scale) + 'px';
+    canvas.style.height = (outHeight * scale) + 'px';
   }
 
-  function drawFrame(canvasEl, frame, t, size) {
-    const c = canvasEl.getContext('2d');
-    c.save();
-    c.fillStyle = '#000';
-    c.fillRect(0, 0, size, size);
+  // отрисовать кадр с учётом поворота на итоговый canvas
+  function drawFrame(targetCanvas, frame, rot) {
+    const swap = rot === 90 || rot === 270;
+    const w = swap ? gifData.height : gifData.width;
+    const h = swap ? gifData.width : gifData.height;
+    targetCanvas.width = w;
+    targetCanvas.height = h;
+    const c = targetCanvas.getContext('2d');
+
+    // исходный кадр
     const src = document.createElement('canvas');
-    src.width = gifData.width; src.height = gifData.height;
+    src.width = gifData.width;
+    src.height = gifData.height;
     src.getContext('2d').putImageData(frame.imageData, 0, 0);
-    c.translate(size / 2 + t.tx, size / 2 + t.ty);
-    c.rotate(t.rot * Math.PI / 180);
-    c.scale(t.zoom, t.zoom);
-    const fit = Math.min(size / gifData.width, size / gifData.height);
-    c.drawImage(src, -gifData.width * fit / 2, -gifData.height * fit / 2, gifData.width * fit, gifData.height * fit);
+
+    c.save();
+    if (rot === 90) {
+      c.translate(w, 0);
+      c.rotate(Math.PI / 2);
+    } else if (rot === 180) {
+      c.translate(w, h);
+      c.rotate(Math.PI);
+    } else if (rot === 270) {
+      c.translate(0, h);
+      c.rotate(-Math.PI / 2);
+    }
+    c.drawImage(src, 0, 0);
     c.restore();
   }
 
-  // ----- Превью -----
   function startPreview() {
     stopPreview();
     currentFrame = 0;
     const tick = () => {
       if (!gifData) return;
-      drawFrame(canvas, gifData.frames[currentFrame], transform, canvasSize);
+      drawFrame(canvas, gifData.frames[currentFrame], rotation);
       const delay = gifData.frames[currentFrame].delay || 100;
       animTimer = setTimeout(() => {
         currentFrame = (currentFrame + 1) % gifData.frames.length;
@@ -251,51 +256,15 @@
   }
   function stopPreview() { if (animTimer) clearTimeout(animTimer); animTimer = null; }
 
-  // ----- Слайдеры -----
-  function updateVals() {
-    vals.rot.textContent = transform.rot + '°';
-    vals.zoom.textContent = transform.zoom.toFixed(2) + '×';
-    vals.tx.textContent = Math.round(transform.tx);
-    vals.ty.textContent = Math.round(transform.ty);
-    vals.size.textContent = canvasSize;
+  function setRotation(newRot) {
+    rotation = ((newRot % 360) + 360) % 360;
+    updateOutputSize();
   }
-  els.rot.addEventListener('input', () => { transform.rot = +els.rot.value; updateVals(); });
-  els.zoom.addEventListener('input', () => { transform.zoom = +els.zoom.value; updateVals(); });
-  els.tx.addEventListener('input', () => { transform.tx = +els.tx.value; updateVals(); });
-  els.ty.addEventListener('input', () => { transform.ty = +els.ty.value; updateVals(); });
-  els.size.addEventListener('input', () => { canvasSize = +els.size.value; updateVals(); });
 
-  document.getElementById('btnRotL').onclick = () => {
-    transform.rot = transform.rot - 90;
-    if (transform.rot < -180) transform.rot += 360;
-    els.rot.value = transform.rot; updateVals();
-  };
-  document.getElementById('btnRotR').onclick = () => {
-    transform.rot = transform.rot + 90;
-    if (transform.rot > 180) transform.rot -= 360;
-    els.rot.value = transform.rot; updateVals();
-  };
-  document.getElementById('btnReset').onclick = () => resetTransform();
+  document.getElementById('btnRotL').onclick = () => setRotation(rotation - 90);
+  document.getElementById('btnRotR').onclick = () => setRotation(rotation + 90);
+  document.getElementById('btnReset').onclick = () => setRotation(0);
 
-  // ----- Перетаскивание -----
-  const previewWrap = document.querySelector('.preview-wrap');
-  previewWrap.addEventListener('pointerdown', (e) => {
-    dragging = true;
-    lastTouch = { x: e.clientX, y: e.clientY, tx: transform.tx, ty: transform.ty };
-    previewWrap.setPointerCapture(e.pointerId);
-  });
-  previewWrap.addEventListener('pointermove', (e) => {
-    if (!dragging) return;
-    transform.tx = lastTouch.tx + (e.clientX - lastTouch.x);
-    transform.ty = lastTouch.ty + (e.clientY - lastTouch.y);
-    els.tx.value = Math.max(-100, Math.min(100, Math.round(transform.tx)));
-    els.ty.value = Math.max(-100, Math.min(100, Math.round(transform.ty)));
-    updateVals();
-  });
-  previewWrap.addEventListener('pointerup', () => { dragging = false; });
-  previewWrap.addEventListener('pointercancel', () => { dragging = false; });
-
-  // ----- Сохранение -----
   document.getElementById('btnSave').onclick = async () => {
     if (!gifData) return;
     stopPreview();
@@ -306,7 +275,7 @@
       const blob = await renderGif();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = 'edited.gif';
+      a.href = url; a.download = 'rotated.gif';
       document.body.appendChild(a); a.click(); a.remove();
       const resBox = document.getElementById('result');
       document.getElementById('resultImg').src = url;
@@ -324,13 +293,16 @@
 
   function renderGif() {
     return new Promise((resolve, reject) => {
+      const swap = rotation === 90 || rotation === 270;
+      const W = swap ? gifData.height : gifData.width;
+      const H = swap ? gifData.width : gifData.height;
       const encoder = new GIF({
-        workers: 2, quality: 10, width: canvasSize, height: canvasSize,
+        workers: 2, quality: 10, width: W, height: H,
         workerScript: gifWorkerBlobUrl
       });
       const frameCanvas = document.createElement('canvas');
       for (let i = 0; i < gifData.frames.length; i++) {
-        drawFrame(frameCanvas, gifData.frames[i], transform, canvasSize);
+        drawFrame(frameCanvas, gifData.frames[i], rotation);
         encoder.addFrame(frameCanvas, { delay: gifData.frames[i].delay || 100, copy: true });
       }
       encoder.on('finished', (blob) => resolve(blob));
@@ -338,6 +310,9 @@
       encoder.render();
     });
   }
+
+  // при изменении размера окна — пересчитать CSS-масштаб
+  window.addEventListener('resize', () => { if (gifData) updateOutputSize(); });
 
 })();
 </script>
